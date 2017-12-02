@@ -5,7 +5,7 @@ using ExtensionMethods;
 
 public class Aimer : MonoBehaviour {
 
-	public float sqareSideLength = 1;
+	public float squareSideLength = 1;
 	public int squaresInRow = 1;
 	public float cycleDuration = 1;
 
@@ -31,23 +31,40 @@ public class Aimer : MonoBehaviour {
 		calcSquareOrdering();
 	}
 
+	void OnValidate ()
+	{
+		changeParameter( squareSideLength, squaresInRow, cycleDuration );
+	}
+
+	void changeParameter(float squareSideLength, int squaresInRow, float cycleDuration)
+	{
+		this.squareSideLength = squareSideLength;
+		this.squaresInRow = squaresInRow;
+		this.cycleDuration = cycleDuration;
+
+		squareFrom_ = getCurrentPos();
+		timeIntoCurrentPair_ = 0;
+		calcSquareCenters();
+		calcSquareOrdering();
+	}
+
 	void debugDrawSquare(Vector3 sc3, Color c)
 	{
 		Vector3 sll = sc3.Clone();
-		sll.x -= sqareSideLength / 2;
-		sll.y -= sqareSideLength / 2;
+		sll.x -= squareSideLength / 2;
+		sll.y -= squareSideLength / 2;
 
 		Vector3 slr = sc3.Clone();
-		slr.x += sqareSideLength / 2;
-		slr.y -= sqareSideLength / 2;
+		slr.x += squareSideLength / 2;
+		slr.y -= squareSideLength / 2;
 
 		Vector3 sul = sc3.Clone();
-		sul.x -= sqareSideLength / 2;
-		sul.y += sqareSideLength / 2;
+		sul.x -= squareSideLength / 2;
+		sul.y += squareSideLength / 2;
 
 		Vector3 sur = sc3.Clone();
-		sur.x += sqareSideLength / 2;
-		sur.y += sqareSideLength / 2;
+		sur.x += squareSideLength / 2;
+		sur.y += squareSideLength / 2;
 
 		Debug.DrawLine( sll, slr, c );
 		Debug.DrawLine( slr, sur, c );
@@ -62,12 +79,25 @@ public class Aimer : MonoBehaviour {
 			Vector3 sc3 = transform.position.Clone() + sc2.ZeroFill();
 			debugDrawSquare( sc3, Color.white );
 		}
+
+		debugDrawSquare( transform.position.Clone() + squareFrom_.ZeroFill(), Color.blue );
+		debugDrawSquare( transform.position.Clone() + squareTo_.ZeroFill(), Color.green );
+		debugDrawSquare( transform.position.Clone() + getCurrentPos().ZeroFill(), Color.red );
+	}
+
+	Vector2 getCurrentPos()
+	{
+		var lerpFactor = Mathf.Sin( ( timeIntoCurrentPair_ / TimePerPair ) * ( Mathf.PI / 2 ) );
+		return Vector2.Lerp( squareFrom_, squareTo_, lerpFactor );
 	}
 
 	// Update is called once per frame
 	void Update ()
 	{
-		debugDraw();
+		if (Input.anyKeyDown)
+		{
+			changeParameter( squareSideLength, squaresInRow + 1, cycleDuration + 1.5f );
+		}
 
 		timeIntoCurrentPair_ += Time.deltaTime;
 
@@ -78,14 +108,8 @@ public class Aimer : MonoBehaviour {
 			timeIntoCurrentPair_ = timeIntoCurrentPair_ - TimePerPair;
 		}
 
-		var lerpFactor = Mathf.Sin( (timeIntoCurrentPair_ / TimePerPair)*(Mathf.PI/2) );
+		debugDraw();
 
-		var result = Vector2.Lerp( squareFrom_, squareTo_, lerpFactor );
-		Vector3 sc3 = transform.position.Clone() + result.ZeroFill();
-
-		debugDrawSquare( transform.position.Clone() + squareFrom_.ZeroFill(), Color.blue );
-		debugDrawSquare( transform.position.Clone() + squareTo_.ZeroFill(), Color.green );
-		debugDrawSquare( sc3, Color.red );
 	}
 
 	Vector2 getNextSquare()
@@ -110,7 +134,7 @@ public class Aimer : MonoBehaviour {
 			throw new System.Exception( "squaresInRow cannot be less than 1" );
 		}
 
-		float upperLeftY = ( sqareSideLength / 2 ) * ( squaresInRow - 1 );
+		float upperLeftY = ( squareSideLength / 2 ) * ( squaresInRow - 1 );
 		float upperLeftX = -upperLeftY;
 
 		squareCenters_.Clear();
@@ -119,7 +143,7 @@ public class Aimer : MonoBehaviour {
 		{
 			for (int j = 0; j < squaresInRow; j++ )
 			{
-				var newSquareCenter = new Vector2( upperLeftX + ( i * sqareSideLength ), upperLeftY - ( j * sqareSideLength ) );
+				var newSquareCenter = new Vector2( upperLeftX + ( i * squareSideLength ), upperLeftY - ( j * squareSideLength ) );
 				squareCenters_.Add( newSquareCenter );
 			}
 		}
