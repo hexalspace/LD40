@@ -8,6 +8,7 @@ public class Aimer : MonoBehaviour {
 	public float squareSideLength = 1;
 	public int squaresInRow = 1;
 	public float cycleDuration = 1;
+	public Texture2D crosshair;
 
 	public int NumberOfSquares {
 		get
@@ -117,9 +118,22 @@ public class Aimer : MonoBehaviour {
 		{
 			Vector3 wayBackFirePoint = transform.position.Clone() + ( -transform.forward * 100000 );
 			Vector3 gridWorldPoint = transform.TransformPoint( getCurrentPos().ZeroFill() );
-			Debug.DrawRay( wayBackFirePoint, gridWorldPoint - wayBackFirePoint, Color.magenta, 10 );
-		}
+			Debug.DrawRay( Camera.main.transform.position, (gridWorldPoint - Camera.main.transform.position ) *25, Color.magenta, 10 );
 
+			RaycastHit info;
+			if ( Physics.Raycast( Camera.main.transform.position, gridWorldPoint - Camera.main.transform.position, out info ) )
+			{
+				info.transform.SendMessage( "Hit", SendMessageOptions.DontRequireReceiver );
+			}
+
+		}
+	}
+
+	void OnGUI ()
+	{
+		int size = crosshair.width / 2;
+		Vector3 screenPos = Camera.main.WorldToScreenPoint( transform.TransformPoint( getCurrentPos().ZeroFill() ) );
+		GUI.DrawTexture( new Rect( screenPos.x - ( size/2 ), (Camera.main.pixelHeight - screenPos.y )-( size/2), size, size ), crosshair );
 	}
 
 	Vector2 getNextSquare()
