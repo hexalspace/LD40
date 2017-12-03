@@ -8,7 +8,8 @@ public class Aimer : MonoBehaviour {
 	public float squareSideLength = 1;
 	public int squaresInRow = 1;
 	public float cycleDuration = 1;
-	public Texture2D crosshair;
+	public Texture2D crosshairImage;
+	public Texture2D ammoImage;
 
 	public int NumberOfSquares {
 		get
@@ -144,9 +145,27 @@ public class Aimer : MonoBehaviour {
 
 	void OnGUI ()
 	{
-		int size = crosshair.width / 2;
-		Vector3 screenPos = Camera.main.WorldToScreenPoint( transform.TransformPoint( getCurrentPos().ZeroFill() ) );
-		GUI.DrawTexture( new Rect( screenPos.x - ( size/2 ), (Camera.main.pixelHeight - screenPos.y )-( size/2), size, size ), crosshair );
+		{
+			// Draw crosshair
+			int size = crosshairImage.width / 2;
+			Vector3 screenPos = Camera.main.WorldToScreenPoint( transform.TransformPoint( getCurrentPos().ZeroFill() ) );
+			GUI.DrawTexture( new Rect( screenPos.x - ( size / 2 ), ( Camera.main.pixelHeight - screenPos.y ) - ( size / 2 ), size, size ), crosshairImage );
+		}
+
+		{
+			// Draw ammo display
+			int size = ammoImage.width/2;
+			int xpos = Camera.main.pixelWidth - ( 2*size );
+			int ypos = Camera.main.pixelHeight - ( 2*size );
+			int spacing = size/3;
+			for ( int i = 0; i < ammo_; i++ )
+			{
+				GUI.DrawTexture( new Rect( xpos, ypos, size, size ), ammoImage );
+				ypos -= size + spacing;
+			}
+		}
+
+
 	}
 
 	Vector2 getNextSquare()
