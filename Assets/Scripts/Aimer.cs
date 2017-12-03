@@ -28,13 +28,24 @@ public class Aimer : MonoBehaviour {
 	// Use this for initialization
 	void Start ()
 	{
-		calcSquareCenters();
-		calcSquareOrdering();
+		changeParameter( Aimer.modeList[ammo_] );
+	}
+
+	void giveAmmo(int amount)
+	{
+		ammo_ += amount;
+		ammo_ = Mathf.Min( ammo_, maxAmmo );
+		changeParameter( Aimer.modeList[ammo_] );
 	}
 
 	void OnValidate ()
 	{
 		changeParameter( squareSideLength, squaresInRow, cycleDuration );
+	}
+
+	void changeParameter( Mode mode )
+	{
+		changeParameter( mode.squareSideLength, mode.squaresInRow, mode.cycleDuration );
 	}
 
 	void changeParameter(float squareSideLength, int squaresInRow, float cycleDuration)
@@ -114,11 +125,11 @@ public class Aimer : MonoBehaviour {
 
 		debugDrawSquares();
 
-		if ( Input.GetButtonDown( "Fire1" ) )
+		if ( Input.GetButtonDown( "Fire1" ) && ammo_ > 0 )
 		{
-			Vector3 wayBackFirePoint = transform.position.Clone() + ( -transform.forward * 100000 );
+			//Vector3 wayBackFirePoint = transform.position.Clone() + ( -transform.forward * 100000 );
 			Vector3 gridWorldPoint = transform.TransformPoint( getCurrentPos().ZeroFill() );
-			Debug.DrawRay( Camera.main.transform.position, (gridWorldPoint - Camera.main.transform.position ) *25, Color.magenta, 10 );
+			//Debug.DrawRay( Camera.main.transform.position, (gridWorldPoint - Camera.main.transform.position ) *25, Color.magenta, 10 );
 
 			RaycastHit info;
 			if ( Physics.Raycast( Camera.main.transform.position, gridWorldPoint - Camera.main.transform.position, out info ) )
@@ -126,6 +137,8 @@ public class Aimer : MonoBehaviour {
 				info.transform.SendMessage( "Hit", SendMessageOptions.DontRequireReceiver );
 			}
 
+			ammo_--;
+			changeParameter( modeList[ammo_] );
 		}
 	}
 
@@ -193,7 +206,27 @@ public class Aimer : MonoBehaviour {
 			unusedIndexes.RemoveAt( unusedIndexes.Count - 1 );
 		}
 	}
+	
+	public struct Mode
+	{
+		public float squareSideLength;
+		public int squaresInRow;
+		public float cycleDuration;
+	}
 
+	public static int maxAmmo = 5;
+
+	public static List<Mode> modeList = new List<Mode>
+	{
+		new Mode { squareSideLength = 0.25f, squaresInRow = 1, cycleDuration = 1  },
+		new Mode { squareSideLength = 0.25f, squaresInRow = 1, cycleDuration = 1  },
+		new Mode { squareSideLength = 0.25f, squaresInRow = 2, cycleDuration = 3  },
+		new Mode { squareSideLength = 0.25f, squaresInRow = 3, cycleDuration = 5  },
+		new Mode { squareSideLength = 0.25f, squaresInRow = 5, cycleDuration = 8  },
+		new Mode { squareSideLength = 0.25f, squaresInRow = 7, cycleDuration = 11  },
+	};
+
+	private int ammo_ = maxAmmo;
 	private Vector2 squareFrom_;
 	private Vector2 squareTo_;
 	private float timeIntoCurrentPair_ = 0;
