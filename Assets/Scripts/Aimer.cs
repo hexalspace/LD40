@@ -48,41 +48,49 @@ public class Aimer : MonoBehaviour {
 		calcSquareOrdering();
 	}
 
-	void debugDrawSquare(Vector3 sc3, Color c)
+	void debugDrawSquare(Vector3 localSpaceVector, Color c)
 	{
-		Vector3 sll = sc3.Clone();
+		Vector3 sll = localSpaceVector.Clone();
 		sll.x -= squareSideLength / 2;
 		sll.y -= squareSideLength / 2;
 
-		Vector3 slr = sc3.Clone();
+		Vector3 slr = localSpaceVector.Clone();
 		slr.x += squareSideLength / 2;
 		slr.y -= squareSideLength / 2;
 
-		Vector3 sul = sc3.Clone();
+		Vector3 sul = localSpaceVector.Clone();
 		sul.x -= squareSideLength / 2;
 		sul.y += squareSideLength / 2;
 
-		Vector3 sur = sc3.Clone();
+		Vector3 sur = localSpaceVector.Clone();
 		sur.x += squareSideLength / 2;
 		sur.y += squareSideLength / 2;
 
-		Debug.DrawLine( sll, slr, c );
-		Debug.DrawLine( slr, sur, c );
-		Debug.DrawLine( sur, sul, c );
-		Debug.DrawLine( sul, sll, c );
+		debugDrawLineLocalCoord( sll, slr, c );
+		debugDrawLineLocalCoord( slr, sur, c );
+		debugDrawLineLocalCoord( sur, sul, c );
+		debugDrawLineLocalCoord( sul, sll, c );
+	}
+
+	void debugDrawLineLocalCoord ( Vector3 localStart, Vector3 localEnd, Color c )
+	{
+		Vector3 worldStart = transform.TransformPoint( localStart );
+		Vector3 worldEnd = transform.TransformPoint( localEnd );
+
+		Debug.DrawLine( worldStart, worldEnd, c );
+
 	}
 
 	void debugDraw()
 	{
 		foreach (var sc2 in squareCenters_ )
 		{
-			Vector3 sc3 = transform.position.Clone() + sc2.ZeroFill();
-			debugDrawSquare( sc3, Color.white );
+			debugDrawSquare( sc2.ZeroFill(), Color.white );
 		}
 
-		debugDrawSquare( transform.position.Clone() + squareFrom_.ZeroFill(), Color.blue );
-		debugDrawSquare( transform.position.Clone() + squareTo_.ZeroFill(), Color.green );
-		debugDrawSquare( transform.position.Clone() + getCurrentPos().ZeroFill(), Color.red );
+		debugDrawSquare( squareFrom_.ZeroFill(), Color.blue );
+		debugDrawSquare( squareTo_.ZeroFill(), Color.green );
+		debugDrawSquare( getCurrentPos().ZeroFill(), Color.red );
 	}
 
 	Vector2 getCurrentPos()
@@ -94,11 +102,6 @@ public class Aimer : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
 	{
-		if (Input.anyKeyDown)
-		{
-			changeParameter( squareSideLength, squaresInRow + 1, cycleDuration + 1.5f );
-		}
-
 		timeIntoCurrentPair_ += Time.deltaTime;
 
 		if ( timeIntoCurrentPair_ > TimePerPair )
