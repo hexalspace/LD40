@@ -81,7 +81,7 @@ public class Aimer : MonoBehaviour {
 
 	}
 
-	void debugDraw()
+	void debugDrawSquares()
 	{
 		foreach (var sc2 in squareCenters_ )
 		{
@@ -111,7 +111,14 @@ public class Aimer : MonoBehaviour {
 			timeIntoCurrentPair_ = timeIntoCurrentPair_ - TimePerPair;
 		}
 
-		debugDraw();
+		debugDrawSquares();
+
+		if ( Input.GetButtonDown( "Fire1" ) )
+		{
+			Vector3 wayBackFirePoint = transform.position.Clone() + ( -transform.forward * 100000 );
+			Vector3 gridWorldPoint = transform.TransformPoint( getCurrentPos().ZeroFill() );
+			Debug.DrawRay( wayBackFirePoint, gridWorldPoint - wayBackFirePoint, Color.magenta, 10 );
+		}
 
 	}
 
