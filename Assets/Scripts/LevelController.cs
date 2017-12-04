@@ -29,6 +29,8 @@ public class LevelController : MonoBehaviour
 	// Ideally would reuse these
 	private List<GameObject> currentLevelObjects_ = new List<GameObject>();
 
+	private AudioSource aSource_;
+
 	private class Level
 	{
 		public List<List<List<char>>> floors = new List<List<List<char>>>();
@@ -42,6 +44,8 @@ public class LevelController : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
+		aSource_ = GetComponent<AudioSource>();
+
 		TextAsset gameFile = Resources.Load<TextAsset>( gameFileName );
 		string gameFileText = gameFile.text;
 		var headerFooter = gameFileText.Split( new string[] { gameFileHeaderSeperator }, System.StringSplitOptions.RemoveEmptyEntries );
@@ -93,8 +97,10 @@ public class LevelController : MonoBehaviour
 			lastLine = line;
 			if (line == gameFileLevelSeperator)
 			{
+				currentLevel.addFloor( currentFloor );
 				levels_.Add( currentLevel );
 				currentLevel = new Level();
+				currentFloor = new List<List<char>>();
 				continue;
 			}
 
@@ -125,12 +131,12 @@ public class LevelController : MonoBehaviour
 
 	private void loadLevel ( int index )
 	{
+		currentGoals_.Clear();
 		foreach (var gObj in currentLevelObjects_ )
 		{
 			Destroy( gObj );
 		}
 		currentLevelObjects_.Clear();
-		currentGoals_.Clear();
 
 		Level currentLevel = levels_[index];
 
@@ -176,6 +182,7 @@ public class LevelController : MonoBehaviour
 		// Check for all targets done
 		if ( currentGoals_.All( a => a.isComplete() ) )
 		{
+			aSource_.Play();
 			currentLevelIndex_++;
 
 			if ( currentLevelIndex_ > levels_.Count - 1)

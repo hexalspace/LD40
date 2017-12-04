@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using ExtensionMethods;
 
-public class Aimer : MonoBehaviour {
+public class Aimer : MonoBehaviour, Reciever
+{
 
 	public float squareSideLength = 1;
 	public int squaresInRow = 1;
@@ -29,14 +30,22 @@ public class Aimer : MonoBehaviour {
 	// Use this for initialization
 	void Start ()
 	{
+		aSource_ = GetComponent<AudioSource>();
 		changeParameter( Aimer.modeList[ammo_] );
 	}
 
-	void giveAmmo(int amount)
+	bool giveAmmo(int amount)
 	{
+		if (ammo_ >= maxAmmo )
+		{
+			return false;
+		}
+
 		ammo_ += amount;
 		ammo_ = Mathf.Min( ammo_, maxAmmo );
 		changeParameter( Aimer.modeList[ammo_] );
+
+		return true;
 	}
 
 	void OnValidate ()
@@ -128,6 +137,7 @@ public class Aimer : MonoBehaviour {
 
 		if ( Input.GetButtonDown( "Fire1" ) && ammo_ > 0 )
 		{
+			aSource_.Play();
 			//Vector3 wayBackFirePoint = transform.position.Clone() + ( -transform.forward * 100000 );
 			Vector3 gridWorldPoint = transform.TransformPoint( getCurrentPos().ZeroFill() );
 			//Debug.DrawRay( Camera.main.transform.position, (gridWorldPoint - Camera.main.transform.position ) *25, Color.magenta, 10 );
@@ -225,7 +235,12 @@ public class Aimer : MonoBehaviour {
 			unusedIndexes.RemoveAt( unusedIndexes.Count - 1 );
 		}
 	}
-	
+
+	public bool recieve ()
+	{
+		 return giveAmmo( 1 );
+	}
+
 	public struct Mode
 	{
 		public float squareSideLength;
@@ -245,6 +260,7 @@ public class Aimer : MonoBehaviour {
 		new Mode { squareSideLength = 0.25f, squaresInRow = 7, cycleDuration = 11  },
 	};
 
+	private AudioSource aSource_;
 	private int ammo_ = maxAmmo;
 	private Vector2 squareFrom_;
 	private Vector2 squareTo_;

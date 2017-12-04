@@ -13,10 +13,12 @@ public class Target : MonoBehaviour, Goal
 	private bool hit_ = false;
 	private float hitForHowLong_ = 0.0f;
 
+	private AudioSource aSource_;
 
 	// Use this for initialization
 	void Start ()
 	{
+		aSource_ = GetComponent<AudioSource>();
 		rend_ = GetComponent<Renderer>();
 		rend_.material = startMaterial;
 	}
@@ -34,6 +36,11 @@ public class Target : MonoBehaviour, Goal
 
 	void Hit()
 	{
+		if (hit_ != true)
+		{
+			aSource_.Play();
+		}
+
 		hit_ = true;
 	}
 
