@@ -3,10 +3,15 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
+public interface Goal
+{
+	bool isComplete ();
+}
+
 public class LevelController : MonoBehaviour
 {
 	//TODO, add this to game.txt
-	public static readonly float squareSize = 2.0f;
+	public static readonly float cubeSize = 2.0f;
 
 	public static readonly string gameFileName = "Game";
 	public static readonly string gameFileHeaderSeperator = "**********";
@@ -14,10 +19,15 @@ public class LevelController : MonoBehaviour
 	public static readonly string gameFileLevelSeperator = "***";
 	public static readonly string gameFileLineStartComment = "//";
 
-	private Dictionary<string, GameObject> stringToGameObject_ = new Dictionary<string, GameObject>();
+	private Dictionary<string, Object> stringToUnityObject_ = new Dictionary<string, Object>();
 	private Dictionary<char, string> charToString_ = new Dictionary<char, string>();
 	private List<Level> levels_ = new List<Level>();
 	private int currentLevelIndex_ = 0;
+
+	private List<Goal> currentGoals_ = new List<Goal>();
+
+	// Ideally would reuse these
+	private List<GameObject> currentLevelObjects_ = new List<GameObject>();
 
 	private class Level
 	{
@@ -67,7 +77,7 @@ public class LevelController : MonoBehaviour
 			}
 
 			charToString_[pair[0][0]] = pair[1];
-			stringToGameObject_[pair[1]] = Resources.Load<GameObject>( pair[1] );
+			stringToUnityObject_[pair[1]] = Resources.Load( pair[1] );
 		}
 	}
 
@@ -115,12 +125,65 @@ public class LevelController : MonoBehaviour
 
 	private void loadLevel ( int index )
 	{
+		foreach (var gObj in currentLevelObjects_ )
+		{
+			Destroy( gObj );
+		}
+		currentLevelObjects_.Clear();
+		currentGoals_.Clear();
+
 		Level currentLevel = levels_[index];
+
+		Vector3 currentPosition = new Vector3( 0, 0, 0 );
+		foreach (var floor in currentLevel.floors)
+		{
+			currentPosition.y += cubeSize;
+			currentPosition.z = 0;
+			foreach (var row in floor)
+			{
+				currentPosition.z -= cubeSize;
+				currentPosition.x = 0;
+				foreach (var charObj in row)
+				{
+					currentPosition.x += cubeSize;
+					Object gameObj = stringToUnityObject_[charToString_[charObj]];
+
+					GameObject instantiatedObq = null;
+					try
+					{
+						instantiatedObq = (GameObject) Instantiate( gameObj, currentPosition, Quaternion.identity );
+					}
+					catch
+					{
+						throw new System.Exception( "Failed to instantiate object for " + charObj );
+					}
+
+					currentLevelObjects_.Add( instantiatedObq );
+
+					foreach (var goal in instantiatedObq.GetComponents<Goal>())
+					{
+						currentGoals_.Add( goal );
+					}
+				}
+			}
+		}
+
 	}
 
 	// Update is called once per frame
 	void Update ()
 	{
-		
+		// Check for all targets done
+		if ( currentGoals_.All( a => a.isComplete() ) )
+		{
+			currentLevelIndex_++;
+
+			if ( currentLevelIndex_ > levels_.Count - 1)
+			{
+				currentLevelIndex_ = 0;
+			}
+
+			loadLevel( currentLevelIndex_ );
+		}
 	}
 }

@@ -1,8 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Target : MonoBehaviour
+public class Target : MonoBehaviour, Goal
 {
 	public Material startMaterial;
 	public Material endMaterial;
@@ -34,5 +35,10 @@ public class Target : MonoBehaviour
 	void Hit()
 	{
 		hit_ = true;
+	}
+
+	public bool isComplete ()
+	{
+		return hit_;
 	}
 }
